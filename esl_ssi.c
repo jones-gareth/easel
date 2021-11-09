@@ -667,7 +667,7 @@ esl_newssi_Open(const char *ssifile, int allow_overwrite, ESL_NEWSSI **ret_newss
 	{ status = eslEOVERWRITE; goto ERROR; }
     }
 
-  if ((ns->ssifp = fopen(ssifile, "w")) == NULL)  { status = eslENOTFOUND; goto ERROR; }
+  if ((ns->ssifp = fopen(ssifile, "wb")) == NULL)  { status = eslENOTFOUND; goto ERROR; }
 
   ESL_ALLOC(ns->filenames,  sizeof(char *)   * eslSSI_FCHUNK);
   for (i = 0; i < eslSSI_FCHUNK; i++) 

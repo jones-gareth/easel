@@ -37,7 +37,9 @@
 #endif
 
 #include "easel.h"
+#ifndef __MINGW32__
 #include <syslog.h>
+#endif /*  __MINGW32__ */
 
 /*****************************************************************
  * 1. Exception and fatal error handling.
@@ -71,15 +73,19 @@ esl_fail(char *errbuf, const char *format, ...)
       /* Check whether we are running as a daemon so we can do the
        * right thing about logging instead of printing errors 
        */
+#ifndef __MINGW32__
       if (getppid() != 1)
 	{ // we aren't running as a daemon, so print the error normally
+#endif /*  __MINGW32__ */
 	  va_start(ap, format);
 	  if (errbuf) vsnprintf(errbuf, eslERRBUFSIZE, format, ap);
 	  va_end(ap);
+#ifndef __MINGW32__
 	}
       else vsyslog(LOG_ERR, format, ap); // SRE: TODO: check this.
                                          // looks wrong. I think it needs va_start(), va_end().
                                          // also see two more occurrences, below.
+#endif /*  __MINGW32__ */
     }
 }
 
@@ -145,8 +151,10 @@ esl_exception(int errcode, int use_errno, char *sourcefile, int sourceline, char
   else 
     {
       /* Check whether we are running as a daemon so we can do the right thing about logging instead of printing errors */
+#ifndef __MINGW32__
       if (getppid() != 1)
 	{ // we're not running as a daemon, so print the error normally
+#endif /*  __MINGW32__ */
 	  fprintf(stderr, "Fatal exception (source file %s, line %d):\n", sourcefile, sourceline);
 	  va_start(argp, format);
 	  vfprintf(stderr, format, argp);
@@ -154,6 +162,7 @@ esl_exception(int errcode, int use_errno, char *sourcefile, int sourceline, char
 	  fprintf(stderr, "\n");
 	  if (use_errno && errno) perror("system error");
 	  fflush(stderr);
+#ifndef __MINGW32__
 	}  
       else vsyslog(LOG_ERR, format, argp);
 
@@ -161,6 +170,7 @@ esl_exception(int errcode, int use_errno, char *sourcefile, int sourceline, char
       MPI_Initialized(&mpiflag);                 /* we're assuming we can do this, even in a corrupted, dying process...? */
       if (mpiflag) MPI_Abort(MPI_COMM_WORLD, 1);
 #endif
+#endif /*  __MINGW32__ */
       abort();
     }
 }
@@ -294,17 +304,20 @@ void
 esl_fatal(const char *format, ...)
 {
   va_list argp;
+#ifndef __MINGW32__
 #ifdef HAVE_MPI
   int mpiflag;
 #endif
   /* Check whether we are running as a daemon so we can do the right thing about logging instead of printing errors */
   if (getppid() != 1)
     { // we're not running as a daemon, so print the error normally
+#endif /*  __MINGW32__ */
       va_start(argp, format);
       vfprintf(stderr, format, argp);
       va_end(argp);
       fprintf(stderr, "\n");
       fflush(stderr);
+#ifndef __MINGW32__
     } 
   else vsyslog(LOG_ERR, format, argp);
 
@@ -312,6 +325,7 @@ esl_fatal(const char *format, ...)
   MPI_Initialized(&mpiflag);
   if (mpiflag) MPI_Abort(MPI_COMM_WORLD, 1);
 #endif
+#endif /*  __MINGW32__ */
   exit(1);
 }
 /*---------------- end, error handling conventions --------------*/
@@ -1358,8 +1372,23 @@ esl_vsprintf(char **ret_s, const char *format, va_list *ap)
       ESL_REALLOC(s, sizeof(char) * (n2+1));
       if (vsnprintf(s, n2+1, format, ap2) == -1) ESL_XEXCEPTION(eslESYS, "vsnprintf() failed");
     }
-  else if (n2 == -1) ESL_XEXCEPTION(eslESYS, "vsnprintf() failed");
-
+  else if (n2 == -1) {
+#ifdef __MINGW32__
+    // Looks like mingw is calling MSVCRT _vsnprintf, rather than vsnprintf as
+    // if the buffer is full then -1 is returned 
+    if (strlen(s) <= n1) {
+      ESL_XEXCEPTION(eslESYS, "vsnprintf() failed");
+    }
+    else {
+      // a call with null pointer will get us the size required
+      n2 = vsnprintf(NULL, 0, format, ap2);
+      ESL_REALLOC(s, sizeof(char) * (n2+1));
+      if (vsnprintf(s, n2+1, format, ap2) == -1) ESL_XEXCEPTION(eslESYS, "vsnprintf() failed");
+    }
+#else
+    ESL_XEXCEPTION(eslESYS, "vsnprintf() failed");
+#endif /* __MINGW32__ */
+  }
   va_end(ap2);
   *ret_s = s;
   return eslOK;
@@ -2102,11 +2131,15 @@ esl_tmpfile(char *basename6X, FILE **ret_fp)
   /* Determine what tmp directory to use, and construct the
    * file name.
    */
+#ifdef __MINGW32__
+  tmpdir = getenv("TMP");
+#else
   if (getuid() == geteuid() && getgid() == getegid()) 
     {
       tmpdir = getenv("TMPDIR");
       if (tmpdir == NULL) tmpdir = getenv("TMP");
     }
+#endif /*  __MINGW32__ */
   if (tmpdir == NULL) tmpdir = "/tmp";
   if ((status = esl_FileConcat(tmpdir, basename6X, &path)) != eslOK) goto ERROR; 
 
@@ -2114,7 +2147,9 @@ esl_tmpfile(char *basename6X, FILE **ret_fp)
   if ((fd = mkstemp(path)) <  0)        ESL_XEXCEPTION(eslESYS, "mkstemp() failed.");
   umask(old_mode);
   if ((fp = fdopen(fd, "w+b")) == NULL) ESL_XEXCEPTION(eslESYS, "fdopen() failed.");
+#ifndef __MINGW32__ // It's not possible to delete an open file on Windows
   if (unlink(path) < 0)                 ESL_XEXCEPTION(eslESYS, "unlink() failed.");
+#endif /* __MINGW32__ */
 
   *ret_fp = fp;
   free(path);

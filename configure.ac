@@ -431,6 +431,8 @@ AS_IF([test "x$with_gsl" != xno],
 # which may be in librt
 AC_SEARCH_LIBS(clock_gettime, [rt posix4])
 
+# mingw mmap
+AC_SEARCH_LIBS(mmap, [mman])
 
 ################################################################
 # 7. Checks for headers

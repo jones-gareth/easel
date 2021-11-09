@@ -2293,7 +2293,10 @@ seebuf(ESL_SQFILE *sqfp, int64_t maxn, int64_t *opt_nres, int64_t *opt_endpos)
          if (ascii->linenumber != -1) ascii->linenumber++;
     }
     else if (x == eslDSQ_ILLEGAL) ESL_FAIL(eslEFORMAT, ascii->errbuf, "Line %" PRId64 ": illegal character %c", ascii->linenumber, sym);
-    else if (x == eslDSQ_EOD)     { status = eslEOD; break; }
+    else if (x == eslDSQ_EOD)     { 
+      status = eslEOD;
+       break; 
+       }
     else if (x != eslDSQ_IGNORED) ESL_FAIL(eslEFORMAT, ascii->errbuf, "inmap corruption?");
   }
 
