@@ -73,7 +73,7 @@ close LISTFILE;
 
 $output = `$eslalimerge -h`;
 if ($? != 0)                                         { die "FAIL: esl-alimerge failed unexpectedly"; }
-if ($output !~ /Usage: esl-alimerge/)                { die "FAIL: help output not right"; }
+if ($output !~ /Usage: \S*esl-alimerge/)                { die "FAIL: help output not right"; }
 
 $output = `$eslalimerge --rna $tmppfx.1 $tmppfx.2 2>&1`;
 if ($? != 0)                                                                              { die "FAIL: esl-alimerge failed unexpectedly"; }

@@ -7,6 +7,7 @@
 #
 # SRE, Tue Feb  2 13:09:58 2010 [Janelia]
 
+
 $top_builddir = shift;
 $top_srcdir   = shift;
 $tmppfx       = shift;
@@ -44,10 +45,10 @@ EOF
 
 # esl-reformat tests
 system("$reformat fasta $tmppfx.dna > $tmppfx.out 2>&1"); if ($? != 0) {  print "FAIL: reformat failed on .dna test\n"; exit 1; }
-system("diff $tmppfx.dna $tmppfx.out > /dev/null  2>&1"); if ($? != 0) {  print "FAIL: reformat changed .dna test\n";   exit 1; }
+system("diff -b $tmppfx.dna $tmppfx.out > /dev/null  2>&1"); if ($? != 0) {  print "FAIL: reformat changed .dna test\n";   exit 1; }
 
 system("$reformat fasta $tmppfx.aa > $tmppfx.out  2>&1"); if ($? != 0) {  print "FAIL: reformat failed on .aa test\n";  exit 1; }
-system("diff $tmppfx.aa $tmppfx.out > /dev/null   2>&1"); if ($? != 0) {  print "FAIL: reformat changed .aa test\n";    exit 1; }
+system("diff -b $tmppfx.aa $tmppfx.out > /dev/null   2>&1"); if ($? != 0) {  print "FAIL: reformat changed .aa test\n";    exit 1; }
 
 $output = `$reformat fasta $tmppfx.bad 2>&1`;             if ($? == 0) {  print "FAIL: reformat should have failed on .bad test\n";  exit 1; }
 if (! $output =~ /Illegal character %/) { print "FAIL: reformat should have found illegal % in .bad test\n"; exit 1; }
@@ -65,12 +66,12 @@ $output = `$seqstat       $tmppfx.bad 2>&1`;   if ($? == 0)  {  print "FAIL: seq
 system("$shuffle $tmppfx.dna           > $tmppfx.out 2>&1");   if ($? != 0)  {  print "FAIL: shuffle failed on .dna test\n";         exit 1; }
 system("$seqstat --dna -c $tmppfx.out  > $tmppfx.out2 2>&1");  if ($? != 0)  {  print "FAIL: seqstat -c failed on shuffled .dna\n";  exit 1; }
 system("$seqstat --dna -c $tmppfx.dna  > $tmppfx.out3 2>&1");  if ($? != 0)  {  print "FAIL: seqstat -c failed on .dna test\n";      exit 1; }
-system("diff $tmppfx.out2 $tmppfx.out3 > /dev/null 2>&1");     if ($? != 0)  {  print "FAIL: shuffle changed .dna composition\n";    exit 1; }
+system("diff -b $tmppfx.out2 $tmppfx.out3 > /dev/null 2>&1");     if ($? != 0)  {  print "FAIL: shuffle changed .dna composition\n";    exit 1; }
 
 system("$shuffle $tmppfx.aa            > $tmppfx.out 2>&1");   if ($? != 0)  {  print "FAIL: shuffle failed on .aa test\n";         exit 1; }
 system("$seqstat -c $tmppfx.out        > $tmppfx.out2 2>&1");  if ($? != 0)  {  print "FAIL: seqstat -c failed on shuffled .aa\n";  exit 1; }
 system("$seqstat -c $tmppfx.aa         > $tmppfx.out3 2>&1");  if ($? != 0)  {  print "FAIL: seqstat -c failed on .aa test\n";      exit 1; }
-system("diff $tmppfx.out2 $tmppfx.out3 > /dev/null 2>&1");     if ($? != 0)  {  print "FAIL: shuffle changed .aa composition\n";    exit 1; }
+system("diff -b $tmppfx.out2 $tmppfx.out3 > /dev/null 2>&1");     if ($? != 0)  {  print "FAIL: shuffle changed .aa composition\n";    exit 1; }
 
 $output = `$shuffle  $tmppfx.bad 2>&1`;   if ($? == 0)  {  print "FAIL: shuffle should have failed on .bad test\n";   exit 1; }
 

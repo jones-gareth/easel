@@ -68,7 +68,7 @@ close ALIFILE;
 
 $output = `$eslalistat -h`;
 if ($? != 0)                                     { die "FAIL: esl-alistat failed unexpectedly"; }
-if ($output !~ /Usage: esl-alistat/)             { die "FAIL: help output not right"; }
+if ($output !~ /Usage: \S*esl-alistat/)             { die "FAIL: help output not right"; }
 
 # We do 2 runs of most tests, with and without --small
 $smallA[0] = "";

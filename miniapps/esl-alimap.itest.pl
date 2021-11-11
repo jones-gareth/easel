@@ -92,7 +92,7 @@ close MASKFILE;
 
 $output = `$eslalimap -h`;
 if ($? != 0)                                         { die "FAIL: esl-alimap failed unexpectedly"; }
-if ($output !~ /Usage: esl-alimap/)                { die "FAIL: help output not right"; }
+if ($output !~ /Usage: \S*esl-alimap/)                { die "FAIL: help output not right"; }
 
 $output = `$eslalimap $tmppfx.1 $tmppfx.2 2>&1`;
 if ($? != 0)                                                              { die "FAIL: esl-alimap failed unexpectedly"; }

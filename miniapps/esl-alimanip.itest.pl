@@ -118,11 +118,11 @@ close MASKFILE;
 
 $output = `$eslalimanip -h`;
 if ($? != 0)                                     { die "FAIL: esl-alimanip failed unexpectedly"; }
-if ($output !~ /Usage: esl-alimanip/)            { die "FAIL: help output not right"; }
+if ($output !~ /Usage: \S*esl-alimanip/)            { die "FAIL: help output not right"; }
 
 $output = `$eslalimanip --devhelp`;
 if ($? != 0)                                     { die "FAIL: esl-alimanip failed unexpectedly"; }
-if ($output !~ /Usage: esl-alimanip/)            { die "FAIL: devhelp output not right"; }
+if ($output !~ /Usage: \S*esl-alimanip/)            { die "FAIL: devhelp output not right"; }
 
 
 $output = `$eslalimanip --rna $tmppfx.stk 2>&1`;

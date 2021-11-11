@@ -199,7 +199,7 @@ esl_sqascii_Open(char *filename, int format, ESL_SQFILE *sqfp)
     }
     else
     { /* Check the current working directory first. */
-      if ((ascii->fp = fopen(filename, "r")) == NULL) {
+      if ((ascii->fp = fopen(filename, "rb")) == NULL) {
         status = eslENOTFOUND;
         goto ERROR;
       }
@@ -502,6 +502,8 @@ sqascii_Position(ESL_SQFILE *sqfp, off_t offset)
     }
   else/* normal case: unaligned sequence file */
     {
+      // In windows fp should be a binary stream as ftell counts \r, so 
+      // in text mode file system position is out of sync with character counts
       if (fseeko(ascii->fp, offset, SEEK_SET) != 0) ESL_EXCEPTION(eslESYS, "fseeko() failed");
 
       ascii->currpl     = -1;
@@ -2066,6 +2068,8 @@ loadmem(ESL_SQFILE *sqfp)
       }
       ascii->is_recording = -1;/* no more recording is possible now */
       ascii->mpos = 0;
+      // In windows fp should be a binary stream as ftell counts \r, so 
+      // in text mode file system position is out of sync with character counts
       ascii->moff = ftello(ascii->fp);
       n = fread(ascii->mem, sizeof(char), eslREADBUFSIZE, ascii->fp); /* see note [1] below */
       ascii->mn   = n;

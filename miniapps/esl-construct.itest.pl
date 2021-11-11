@@ -60,7 +60,7 @@ close ALIFILE;
 
 $output = `$eslconstruct -h`;
 if ($? != 0)                                         { die "FAIL: esl-construct failed unexpectedly"; }
-if ($output !~ /Usage: esl-construct/)               { die "FAIL: help output not right"; }
+if ($output !~ /Usage: \S*esl-construct/)               { die "FAIL: help output not right"; }
 
 $output = `$eslconstruct $tmppfx.1 2>&1`;
 if ($? != 0)                                                            { die "FAIL: esl-construct failed unexpectedly";      }
