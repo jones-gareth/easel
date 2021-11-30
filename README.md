@@ -1,3 +1,7 @@
+# Windows port of Easel
+
+This project is a port of Easel source code to the [MInGW](https://www.mingw-w64.org) compiler.  
+
 # Easel - a C library for biological sequence analysis
 
 [![](https://travis-ci.org/EddyRivasLab/easel.svg?branch=develop)](https://travis-ci.org/EddyRivasLab/easel)
