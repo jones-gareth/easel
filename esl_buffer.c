@@ -27,11 +27,11 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef _POSIX_VERSION
+#if defined _POSIX_VERSION || defined __MINGW32__
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#endif /* _POSIX_VERSION */
+#endif /* _POSIX_VERSION || __MINGW32__*/
 
 #include "easel.h"
 #include "esl_mem.h"
@@ -194,7 +194,7 @@ int
 esl_buffer_OpenFile(const char *filename, ESL_BUFFER **ret_bf)
 {
   ESL_BUFFER *bf = NULL;
-#ifdef _POSIX_VERSION
+#if defined _POSIX_VERSION || defined  __MINGW32__
   struct stat fileinfo;
 #endif
   esl_pos_t   filesize = -1;
@@ -212,7 +212,7 @@ esl_buffer_OpenFile(const char *filename, ESL_BUFFER **ret_bf)
    * If we don't have fstat(), we'll just read normally, and pagesize
    * will be the Easel default 4096 (set in buffer_create().)
    */
-#ifdef _POSIX_VERSION
+#ifdef _POSIX_VERSION 
   if (fstat(fileno(bf->fp), &fileinfo) == -1) ESL_XEXCEPTION(eslESYS, "fstat() failed");
   filesize     = fileinfo.st_size;
   bf->pagesize = fileinfo.st_blksize;
@@ -220,9 +220,15 @@ esl_buffer_OpenFile(const char *filename, ESL_BUFFER **ret_bf)
   if (bf->pagesize > 4194304) bf->pagesize = 4194304;
 #endif  
 
+#ifdef __MINGW32__
+  if (fstat(fileno(bf->fp), &fileinfo) == -1) ESL_XEXCEPTION(eslESYS, "fstat() failed");
+  filesize     = fileinfo.st_size;
+  bf->pagesize = 512; // May be able to tune using Windows DeviceIoControl()
+#endif /* __MINGW32__ */
+
   if      (filesize != -1 && filesize <= eslBUFFER_SLURPSIZE)  
     { if ((status = buffer_init_file_slurped(bf, filesize)) != eslOK) goto ERROR; }
-#ifdef _POSIX_VERSION
+#if defined _POSIX_VERSION || defined __MINGW32__
   else if (filesize > eslBUFFER_SLURPSIZE) 
     { if ((status = buffer_init_file_mmap(bf, filesize))    != eslOK) goto ERROR; }
 #endif
@@ -648,7 +654,7 @@ esl_buffer_SetOffset(ESL_BUFFER *bf, esl_pos_t offset)
 	  bf->pos = offset-bf->baseoffset;
 	}
 
-#ifdef _POSIX_VERSION
+#if defined _POSIX_VERSION || defined __MINGW32__
       else if (bf->mode_is == eslBUFFER_FILE && bf->anchor == -1)
 	{			/* a posix-compliant system can always fseeko() on a file */
 	  if (fseeko(bf->fp, offset, SEEK_SET) != 0) ESL_EXCEPTION(eslEINVAL, "fseeko() failed, probably bad offset");
@@ -2190,7 +2196,7 @@ buffer_OpenFileAs(const char *filename, enum esl_buffer_mode_e mode_is, ESL_BUFF
 {
   char        msg[] = "buffer_OpenFileAs() failed";
   ESL_BUFFER *bf    = NULL;
-#ifdef _POSIX_VERSION
+#if defined _POSIX_VERSION || defined __MINGW32__
   struct stat fileinfo;
 #endif
   esl_pos_t   filesize = -1;
@@ -2206,6 +2212,13 @@ buffer_OpenFileAs(const char *filename, enum esl_buffer_mode_e mode_is, ESL_BUFF
   if (bf->pagesize < 512)     bf->pagesize = 512;     
   if (bf->pagesize > 4194304) bf->pagesize = 4194304;
 #endif  
+
+#ifdef __MINGW32__
+  if (fstat(fileno(bf->fp), &fileinfo) == -1) esl_fatal(msg);
+  filesize     = fileinfo.st_size;
+  bf->pagesize = 512; // May be able to tune using Windows DeviceIoControl()
+#endif /* __MINGW32__ */
+
 
   switch (mode_is) {
   case eslBUFFER_ALLFILE: if (buffer_init_file_slurped(bf, filesize) != eslOK) esl_fatal(msg); break;
@@ -2366,14 +2379,14 @@ utest_SetOffset(const char *tmpfile, int nlines_expected)
    *          Try to offset back to 0; this should throw eslEINVAL.
    *   (also exercise gzip reading, if we can) 
    */
-#if defined HAVE_GZIP
+#if defined HAVE_GZIP && !defined __MINGW32__
   snprintf(gzipfile,   32, "%s.gz", tmpfile);
   snprintf(cmd,       256, "gzip -c %s 2>/dev/null > %s", tmpfile, gzipfile);
   if (system(cmd) != 0) esl_fatal(msg);
   if (esl_buffer_Open(gzipfile, NULL, &bf)  != eslOK) esl_fatal(msg);
   fp = NULL;
 #else
-  if ( (fp = fopen(tmpfile, "r"))            == NULL) esl_fatal(msg);
+  if ( (fp = fopen(tmpfile, "rb"))            == NULL) esl_fatal(msg);
   if (esl_buffer_OpenStream(fp, &bf)        != eslOK) esl_fatal(msg);
 #endif
   if (esl_buffer_SetOffset(bf, testoffset1) != eslOK) esl_fatal(msg);
@@ -2743,6 +2756,8 @@ utest_OpenPipe(const char *tmpfile, int nlines)
  */
 static void alarm_handler(int signum) { esl_fatal("utest_halfnewline() timed out and failed"); }
 
+
+#ifndef __MINGW32__
 static void
 utest_halfnewline(void)
 {
@@ -2769,7 +2784,7 @@ utest_halfnewline(void)
   signal(SIGALRM, SIG_DFL);  // deletes self-destruct handler
   return;
 }
-       
+#endif /* __MINGW32__ */
 
 
 #endif /* eslBUFFER_TESTDRIVE */
@@ -2825,12 +2840,16 @@ main(int argc, char **argv)
 
   utest_OpenFile  (tmpfile, nlines);
   utest_OpenStream(tmpfile, nlines);
+#ifndef __MINGW32__
   utest_OpenPipe  (tmpfile, nlines);
+#endif /* __MINGW32__ */
 
   utest_SetOffset (tmpfile, nlines);
   utest_Read();
 
+#ifndef __MINGW32__
   utest_halfnewline();
+#endif /* __MINGW32__ */
 
   nbuftypes  = 7;
   ntesttypes = 8;
@@ -2847,7 +2866,11 @@ main(int argc, char **argv)
 	  if (esl_buffer_OpenStream(fp, &bf) != eslOK) esl_fatal(msg);
 	  break;
 	case 5:
+#ifdef __MINGW32__
+    continue;
+#else
 	  if (esl_buffer_OpenPipe(tmpfile, cmdfmt, &bf) != eslOK) esl_fatal(msg);
+#endif /* __MINGW32__ */
 	  break;
 	case 6:
 	  if (esl_buffer_OpenFile(tmpfile, &bftmp) != eslOK) esl_fatal(msg);

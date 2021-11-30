@@ -197,7 +197,7 @@ AX_PROG_CC_MPI([test x"$enable_mpi" = xyes],
     [ if test x"$enable_mpi" = xyes; then
         AC_MSG_ERROR([MPI library not found for --enable-mpi]);
       fi])
-AC_PROG_CC_STDC
+AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
@@ -431,6 +431,8 @@ AS_IF([test "x$with_gsl" != xno],
 # which may be in librt
 AC_SEARCH_LIBS(clock_gettime, [rt posix4])
 
+# mingw mmap
+AC_SEARCH_LIBS(mmap, [mman])
 
 ################################################################
 # 7. Checks for headers

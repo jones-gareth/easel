@@ -84,7 +84,7 @@ $have_rfA[3] = 0;
 
 $output = `$eslalimask -h`;
 if ($? != 0)                                        { die "FAIL: esl-alimask failed unexpectedly"; }
-if ($output !~ /Usage: esl-alimask/)                { die "FAIL: help output not right"; }
+if ($output !~ /Usage: \S*esl-alimask/)                { die "FAIL: help output not right"; }
 
 for($pass = 0; $pass < 4; $pass++) {
     $pass2write = $pass+1;

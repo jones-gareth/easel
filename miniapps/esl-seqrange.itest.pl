@@ -83,7 +83,7 @@ close SEQFILE;
 
 $output = `$eslseqrange -h`;
 if ($? != 0)                                     { die "FAIL: esl-seqrange failed unexpectedly"; }
-if ($output !~ /Usage: esl-seqrange/)            { die "FAIL: help output not right"; }
+if ($output !~ /Usage: \S*esl-seqrange/)            { die "FAIL: help output not right"; }
 
 # index the file first! we need an index
 if(-e "$tmppfx.fa.ssi") { unlink "$tmppfx.fa.ssi"; } # erase the index if it exists

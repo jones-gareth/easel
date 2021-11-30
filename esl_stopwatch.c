@@ -276,10 +276,10 @@ esl_stopwatch_Include(ESL_STOPWATCH *master, ESL_STOPWATCH *w)
  *   a reasonable test of the minimal resolution, including call overhead; that gives
  *   me about 0.1 microseconds (12 Jan 2016).
  */
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
 #include <Windows.h>
 
-#elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
+#elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__)) || defined(__MINGW32__)
 #include <unistd.h>	/* POSIX flags */
 #include <time.h>	/* clock_gettime(), time() */
 #include <sys/time.h>	/* gethrtime(), gettimeofday() */
@@ -303,7 +303,7 @@ esl_stopwatch_Include(ESL_STOPWATCH *master, ESL_STOPWATCH *w)
 static double 
 stopwatch_getRealTime(void)
 {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
 	FILETIME tm;
 	ULONGLONG t;
 #if defined(NTDDI_WIN8) && NTDDI_VERSION >= NTDDI_WIN8

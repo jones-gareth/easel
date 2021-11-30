@@ -32,7 +32,7 @@ close MASKFILE;
 
 $output = `$eslmask -h`;
 if ($? != 0)                                     { die "FAIL: esl-mask failed unexpectedly"; }
-if ($output !~ /Usage: esl-mask/)                { die "FAIL: help output not right"; }
+if ($output !~ /Usage: \S*esl-mask/)                { die "FAIL: help output not right"; }
 
 $output = `$eslmask $tmppfx.1 $tmppfx.2 2>&1`;
 if ($? != 0)                                     { die "FAIL: esl-mask failed unexpectedly"; }

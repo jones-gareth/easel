@@ -1964,13 +1964,18 @@ main(void)
   /* Put some test vars in the environment.
    * (Note: apparently, on some OS's (Mac OS/X), setenv() necessarily leaks memory.)
    */
+#ifdef __MINGW32__
+  _putenv_s("FOOTEST",  " ");  // empty string doesn't set environment variable
+  _putenv_s("HOSTTEST", "wasp.cryptogenomicon.org");
+#else
   setenv("FOOTEST",  "",                         1);
   setenv("HOSTTEST", "wasp.cryptogenomicon.org", 1);
+#endif
 
   /* Open the test config files for reading.
    */
-  if ((f1 = fopen(file1, "r")) == NULL) esl_fatal("getopts fopen() 1 failed");
-  if ((f2 = fopen(file2, "r")) == NULL) esl_fatal("getopts fopen() 2 failed");
+  if ((f1 = fopen(file1, "rb")) == NULL) esl_fatal("getopts fopen() 1 failed");
+  if ((f2 = fopen(file2, "rb")) == NULL) esl_fatal("getopts fopen() 2 failed");
 
   go = esl_getopts_Create(options);
   if (esl_opt_ProcessConfigfile(go, file1, f1) != eslOK) esl_fatal("getopts failed to process config file 1\n%s\n", go->errbuf);

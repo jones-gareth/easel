@@ -19,7 +19,11 @@ builddir = sys.argv[1]
 srcdir   = sys.argv[2]
 tmppfx   = sys.argv[3]
 
-if not os.path.isfile('{0}/miniapps/esl-shuffle'.format(builddir)):
+if os.name == 'nt':
+    exe = 'esl-shuffle.exe'
+else:
+    exe = 'esl-shuffle'
+if not os.path.isfile('{0}/miniapps/{1}'.format(builddir, exe)):
     sys.exit('FAIL: no esl-shuffle program in {0}'.format(builddir))
 errmsg = 'FAIL: esl-shuffle.itest.py integration test failed'
 

@@ -58,21 +58,21 @@ close TESTLIST;
 #
 @output = `$esl_afetch $tmppfx.sto baz`;
 if ($? != 0)                       { die "FAIL: esl-afetch failed, returned nonzero"; }
-if ($output[1] !~ /^#=GF ID baz$/) { die "FAIL: esl-afetch fetched incorrectly";      }
-if ($output[6] !~ /^\/\/$/)        { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[1] !~ /^#=GF ID baz\r?$/) { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[6] !~ /^\/\/\r?$/)        { die "FAIL: esl-afetch fetched incorrectly";      }
 if ($#output != 6)                 { die "FAIL: esl-afetch fetched incorrectly";      }
 
 @output = `$esl_afetch $tmppfx.sto XX00003.3`;
 if ($? != 0)                       { die "FAIL: esl-afetch failed, returned nonzero"; }
-if ($output[1] !~ /^#=GF ID baz$/) { die "FAIL: esl-afetch fetched incorrectly";      }
-if ($output[6] !~ /^\/\/$/)        { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[1] !~ /^#=GF ID baz\r?$/) { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[6] !~ /^\/\/\r?$/)        { die "FAIL: esl-afetch fetched incorrectly";      }
 if ($#output != 6)                 { die "FAIL: esl-afetch fetched incorrectly";      }
 
 # Without SSI, when fetching from a list, MSAs are in order of .sto file, not .list file
 @output = `$esl_afetch -f $tmppfx.sto $tmppfx.list`;               
 if ($? != 0)                       { die "FAIL: esl-afetch failed, returned nonzero"; }
-if ($output[1] !~ /^#=GF ID foo$/) { die "FAIL: esl-afetch fetched incorrectly";      }
-if ($output[8] !~ /^#=GF ID baz$/) { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[1] !~ /^#=GF ID foo\r?$/) { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[8] !~ /^#=GF ID baz\r?$/) { die "FAIL: esl-afetch fetched incorrectly";      }
 if ($#output != 13)                { die "FAIL: esl-afetch fetched incorrectly";      }
 
 @output = `$esl_afetch -O $tmppfx.sto $tmppfx.name`;                 if ($? != 0) { die "FAIL: esl-afetch failed, returned nonzero"; }
@@ -103,21 +103,21 @@ if ($? != 0)                       { die "FAIL: esl-afetch indexing failed, retu
 # so the test alignments are fetched with no blank line between #=GF AC line and first seq.
 @output = `$esl_afetch $tmppfx.sto baz`;
 if ($? != 0)                       { die "FAIL: esl-afetch failed, returned nonzero"; }
-if ($output[1] !~ /^#=GF ID baz$/) { die "FAIL: esl-afetch fetched incorrectly";      }
-if ($output[5] !~ /^\/\/$/)        { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[1] !~ /^#=GF ID baz\r?$/) { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[5] !~ /^\/\/\r?$/)        { die "FAIL: esl-afetch fetched incorrectly";      }
 if ($#output != 5)                 { die "FAIL: esl-afetch fetched incorrectly";      }
 
 @output = `$esl_afetch $tmppfx.sto XX00003.3`;
 if ($? != 0)                       { die "FAIL: esl-afetch failed, returned nonzero"; }
-if ($output[1] !~ /^#=GF ID baz$/) { die "FAIL: esl-afetch fetched incorrectly";      }
-if ($output[5] !~ /^\/\/$/)        { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[1] !~ /^#=GF ID baz\r?$/) { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[5] !~ /^\/\/\r?$/)        { die "FAIL: esl-afetch fetched incorrectly";      }
 if ($#output != 5)                 { die "FAIL: esl-afetch fetched incorrectly";      }
 
 # With SSI, when fetching from a list, MSAs are in order of .list file, not .sto file
 @output = `$esl_afetch -f $tmppfx.sto $tmppfx.list`;               
 if ($? != 0)                       { die "FAIL: esl-afetch failed, returned nonzero"; }
-if ($output[1] !~ /^#=GF ID baz$/) { die "FAIL: esl-afetch fetched incorrectly";      }
-if ($output[7] !~ /^#=GF ID foo$/) { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[1] !~ /^#=GF ID baz\r?$/) { die "FAIL: esl-afetch fetched incorrectly";      }
+if ($output[7] !~ /^#=GF ID foo\r?$/) { die "FAIL: esl-afetch fetched incorrectly";      }
 if ($#output != 11)                { die "FAIL: esl-afetch fetched incorrectly";      }
 
 @output = `$esl_afetch -O $tmppfx.sto $tmppfx.name`;                 if ($? != 0) { die "FAIL: esl-afetch failed, returned nonzero"; }

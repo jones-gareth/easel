@@ -357,7 +357,11 @@ main(int argc, char **argv)
          * It shoves all sequences into a single database, #1.
          */
         date = time(NULL);
+#ifdef __MINGW32__
+        ctime_s(timestamp, 32, &date);
+#else
         ctime_r(&date, timestamp);
+#endif /* __MINGW32__ */
         fprintf(mapfp, "%d\n", idx);
         fprintf(ofp, "#%" PRId64 " %d %d %d %d %s", res_cnt, idx, 1, idx, idx, timestamp);
 

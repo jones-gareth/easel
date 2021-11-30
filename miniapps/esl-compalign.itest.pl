@@ -71,7 +71,7 @@ close MASKFILE;
 
 $output = `$eslcompalign -h`;
 if ($? != 0)                                          { die "FAIL: esl-compalign failed unexpectedly"; }
-if ($output !~ /Usage: esl-compalign/)                { die "FAIL: help output not right"; }
+if ($output !~ /Usage: \S*esl-compalign/)                { die "FAIL: help output not right"; }
 
 $output = `$eslcompalign --rna $tmppfx.1 $tmppfx.2 2>&1`;
 if ($? != 0)                                                                                                                                { die "FAIL: esl-compalign failed unexpectedly";}
