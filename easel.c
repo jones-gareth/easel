@@ -8,7 +8,7 @@
  *    5. Portable drop-in replacements for nonstandard C functions.
  *    6. Additional string functions, esl_str*()
  *    7. File path/name manipulation, including tmpfiles.
- *    8. Typed comparison functions.
+ *    8. Type`td comparison functions.
  *    9. Unit tests.
  *   10. Test driver.
  *   11. Examples. 
@@ -37,7 +37,12 @@
 #endif
 
 #include "easel.h"
-#ifndef __MINGW32__
+#ifdef __MINGW32__
+#include <fileapi.h>
+#include <io.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#else
 #include <syslog.h>
 #endif /*  __MINGW32__ */
 
@@ -2132,24 +2137,29 @@ esl_tmpfile(char *basename6X, FILE **ret_fp)
    * file name.
    */
 #ifdef __MINGW32__
-  tmpdir = getenv("TMP");
+  char tmppath[MAX_PATH+1];
+  if (GetTempPathA(MAX_PATH+1, tmppath) == 0) ESL_XEXCEPTION(eslESYS, "GetTempPath2A failed.");
+  tmpdir = &tmppath[0];
 #else
   if (getuid() == geteuid() && getgid() == getegid()) 
     {
       tmpdir = getenv("TMPDIR");
       if (tmpdir == NULL) tmpdir = getenv("TMP");
     }
-#endif /*  __MINGW32__ */
   if (tmpdir == NULL) tmpdir = "/tmp";
+#endif
   if ((status = esl_FileConcat(tmpdir, basename6X, &path)) != eslOK) goto ERROR; 
 
+#ifdef __MINGW32__
+  if ((path = _mktemp(path)) == NULL)                                                   ESL_XEXCEPTION(eslESYS, "_mktemp() failed.");
+  if ((fd = _open(path,  _O_CREAT | _O_TEMPORARY | _O_RDWR, _S_IREAD | _S_IWRITE)) < 0) ESL_XEXCEPTION(eslESYS, "_open() failed."  );
+#else
   old_mode = umask(077);
   if ((fd = mkstemp(path)) <  0)        ESL_XEXCEPTION(eslESYS, "mkstemp() failed.");
   umask(old_mode);
+#endif
   if ((fp = fdopen(fd, "w+b")) == NULL) ESL_XEXCEPTION(eslESYS, "fdopen() failed.");
-#ifndef __MINGW32__ // It's not possible to delete an open file on Windows
   if (unlink(path) < 0)                 ESL_XEXCEPTION(eslESYS, "unlink() failed.");
-#endif /* __MINGW32__ */
 
   *ret_fp = fp;
   free(path);
@@ -2161,7 +2171,6 @@ esl_tmpfile(char *basename6X, FILE **ret_fp)
   *ret_fp = NULL;
   return status;
 }
-
 /* Function:  esl_tmpfile_named()
  *
  * Purpose:   Open a persistent temporary file relative to the current
